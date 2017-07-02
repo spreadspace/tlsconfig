@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-//********** ProtocolType
+//********** ProtocolVersion
 
 type TLSProtocolVersion uint16
 
