@@ -246,15 +246,15 @@ func (stk *TLSSessionTicketKey) UnmarshalText(data []byte) (err error) {
 //********** TLSConfig
 
 type TLSConfig struct {
-	CertFile                 string              `json:"certificate"`
-	KeyFile                  string              `json:"certificate-key"`
-	MinVersion               TLSProtocolVersion  `json:"min-protocol-version"`
-	MaxVersion               TLSProtocolVersion  `json:"max-protocol-version"`
-	CipherSuites             []TLSCipherSuite    `json:"ciphers"`
-	PreferServerCipherSuites bool                `json:"prefer-server-ciphers"`
-	CurvePreferences         []TLSCurve          `json:"ecdh-curves"`
-	SessionTickets           bool                `json:"session-tickets"`
-	SessionTicketKey         TLSSessionTicketKey `json:"session-ticket-key"`
+	CertFile                 string              `json:"certificate" yaml:"certificate" toml:"certificate"`
+	KeyFile                  string              `json:"certificate-key" yaml:"certificate-key" toml:"certificate-key"`
+	MinVersion               TLSProtocolVersion  `json:"min-protocol-version" yaml:"min-protocol-version" toml:"min-protocol-version"`
+	MaxVersion               TLSProtocolVersion  `json:"max-protocol-version" yaml:"max-protocol-version" toml:"max-protocol-version"`
+	CipherSuites             []TLSCipherSuite    `json:"ciphers" yaml:"ciphers" toml:"ciphers"`
+	PreferServerCipherSuites bool                `json:"prefer-server-ciphers" yaml:"prefer-server-ciphers" toml:"prefer-server-ciphers"`
+	CurvePreferences         []TLSCurve          `json:"ecdh-curves" yaml:"ecdh-curves" toml:"ecdh-curves"`
+	SessionTickets           bool                `json:"session-tickets" yaml:"session-tickets" toml:"session-tickets"`
+	SessionTicketKey         TLSSessionTicketKey `json:"session-ticket-key" yaml:"session-ticket-key" toml:"session-ticket-key"`
 }
 
 func (t TLSConfig) ToGoTLSConfig() (*tls.Config, error) {
