@@ -25,7 +25,7 @@ func (pv TLSProtocolVersion) String() string {
 	return "unknown tls protocol"
 }
 
-func (pv *TLSProtocolVersion) fromString(str string) (err error) {
+func (pv *TLSProtocolVersion) FromString(str string) (err error) {
 	switch strings.ToUpper(str) {
 	case "SSLV3":
 		*pv = tls.VersionSSL30
@@ -47,7 +47,7 @@ func (pv TLSProtocolVersion) MarshalText() (data []byte, err error) {
 }
 
 func (pv *TLSProtocolVersion) UnmarshalText(data []byte) (err error) {
-	return pv.fromString(string(data))
+	return pv.FromString(string(data))
 }
 
 //********** CipherSuite
@@ -104,7 +104,7 @@ func (cs TLSCipherSuite) String() string {
 	return "unknown tls cipher suite"
 }
 
-func (cs *TLSCipherSuite) fromString(str string) (err error) {
+func (cs *TLSCipherSuite) FromString(str string) (err error) {
 	switch strings.Replace(strings.ToUpper(str), "-", "_", -1) {
 	case "RSA_WITH_RC4_128_SHA":
 		*cs = TLSCipherSuite(tls.TLS_RSA_WITH_RC4_128_SHA)
@@ -162,7 +162,7 @@ func (cs TLSCipherSuite) MarshalText() (data []byte, err error) {
 }
 
 func (cs *TLSCipherSuite) UnmarshalText(data []byte) (err error) {
-	return cs.fromString(string(data))
+	return cs.FromString(string(data))
 }
 
 //********** TLSCurve
@@ -183,7 +183,7 @@ func (c TLSCurve) String() string {
 	return "unknown tls echd curve"
 }
 
-func (c *TLSCurve) fromString(str string) (err error) {
+func (c *TLSCurve) FromString(str string) (err error) {
 	switch strings.ToLower(str) {
 	case "prime256v1":
 		fallthrough
@@ -211,7 +211,7 @@ func (c TLSCurve) MarshalText() (data []byte, err error) {
 }
 
 func (c *TLSCurve) UnmarshalText(data []byte) (err error) {
-	return c.fromString(string(data))
+	return c.FromString(string(data))
 }
 
 //********** TLSSessionTicketKey
@@ -222,7 +222,7 @@ func (stk TLSSessionTicketKey) String() string {
 	return hex.EncodeToString([]byte(stk[:]))
 }
 
-func (stk *TLSSessionTicketKey) fromString(str string) error {
+func (stk *TLSSessionTicketKey) FromString(str string) error {
 	key, err := hex.DecodeString(str)
 	if err != nil {
 		return fmt.Errorf("invalid tls session ticket key: %v", err)
@@ -240,7 +240,7 @@ func (stk TLSSessionTicketKey) MarshalText() (data []byte, err error) {
 }
 
 func (stk *TLSSessionTicketKey) UnmarshalText(data []byte) (err error) {
-	return stk.fromString(string(data))
+	return stk.FromString(string(data))
 }
 
 //********** TLSConfig
