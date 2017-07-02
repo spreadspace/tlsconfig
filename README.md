@@ -3,7 +3,7 @@
 [![GoDoc](https://godoc.org/github.com/spreadsapce/tlsconfig?status.svg)](https://godoc.org/github.com/spreadspace/tlsconfig)
 
 
-A simple go library to read TLS configurations from json and similiar configuration formats.
+A simple go library to read TLS configurations from json and similar configuration formats.
 
 
 ## License
