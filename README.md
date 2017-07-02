@@ -10,7 +10,4 @@ A simple go library to read TLS configurations from json and similiar configurat
 
     3-clause BSD
 
-    © 2016 whawty contributors (see AUTHORS file)
-
-    whawty.auth makes use of zxcvbn from https://github.com/dropbox/zxcvbn.
-    The license of zxcvbn can be found in the file LICENSE.zxcvbn
+    © 2017 Christian Pointner <equinox@spreadspace.org>
