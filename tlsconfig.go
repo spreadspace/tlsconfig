@@ -284,7 +284,7 @@ type TLSConfig struct {
 func (t TLSConfig) ToGoTLSConfig() (*tls.Config, error) {
 	cert, err := tls.LoadX509KeyPair(t.CertFile, t.KeyFile)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to load certificate and or key: %s", err)
 	}
 
 	cfg := &tls.Config{Certificates: []tls.Certificate{cert}}
