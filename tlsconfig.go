@@ -21,6 +21,8 @@ func (pv TLSProtocolVersion) String() string {
 		return "TLSv1.1"
 	case tls.VersionTLS12:
 		return "TLSv1.2"
+	case tls.VersionTLS13:
+		return "TLSv1.3"
 	}
 	return "unknown tls protocol"
 }
@@ -35,6 +37,8 @@ func (pv *TLSProtocolVersion) FromString(str string) (err error) {
 		*pv = tls.VersionTLS11
 	case "TLSV1.2":
 		*pv = tls.VersionTLS12
+	case "TLSV1.3":
+		*pv = tls.VersionTLS13
 	default:
 		return fmt.Errorf("invalid tls protocol version: '" + str + "'")
 	}
@@ -56,6 +60,7 @@ type TLSCipherSuite uint16
 
 func (cs TLSCipherSuite) String() string {
 	switch uint16(cs) {
+	// TLS 1.0 - 1.2 cipher suites.
 	case tls.TLS_RSA_WITH_RC4_128_SHA:
 		return "RSA_WITH_RC4_128_SHA"
 	case tls.TLS_RSA_WITH_3DES_EDE_CBC_SHA:
@@ -96,16 +101,24 @@ func (cs TLSCipherSuite) String() string {
 		return "ECDHE_RSA_WITH_AES_256_GCM_SHA384"
 	case tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384:
 		return "ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"
-	case tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305:
-		return "ECDHE_RSA_WITH_CHACHA20_POLY1305"
-	case tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305:
-		return "ECDHE_ECDSA_WITH_CHACHA20_POLY1305"
+	case tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256:
+		return "ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256"
+	case tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256:
+		return "ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256"
+	// TLS 1.3 cipher suites.
+	case tls.TLS_AES_128_GCM_SHA256:
+		return "TLS_AES_128_GCM_SHA256"
+	case tls.TLS_AES_256_GCM_SHA384:
+		return "TLS_AES_256_GCM_SHA384"
+	case tls.TLS_CHACHA20_POLY1305_SHA256:
+		return "TLS_CHACHA20_POLY1305_SHA256"
 	}
 	return "unknown tls cipher suite"
 }
 
 func (cs *TLSCipherSuite) FromString(str string) (err error) {
 	switch strings.Replace(strings.ToUpper(str), "-", "_", -1) {
+	// TLS 1.0 - 1.2 cipher suites.
 	case "RSA_WITH_RC4_128_SHA":
 		*cs = TLSCipherSuite(tls.TLS_RSA_WITH_RC4_128_SHA)
 	case "RSA_WITH_3DES_EDE_CBC_SHA":
@@ -147,9 +160,20 @@ func (cs *TLSCipherSuite) FromString(str string) (err error) {
 	case "ECDHE_ECDSA_WITH_AES_256_GCM_SHA384":
 		*cs = TLSCipherSuite(tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384)
 	case "ECDHE_RSA_WITH_CHACHA20_POLY1305":
-		*cs = TLSCipherSuite(tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305)
+		fallthrough
+	case "ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256":
+		*cs = TLSCipherSuite(tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256)
 	case "ECDHE_ECDSA_WITH_CHACHA20_POLY1305":
-		*cs = TLSCipherSuite(tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305)
+		fallthrough
+	case "ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256":
+		*cs = TLSCipherSuite(tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256)
+	// TLS 1.3 cipher suites.
+	case "TLS_AES_128_GCM_SHA256":
+		*cs = TLSCipherSuite(tls.TLS_AES_128_GCM_SHA256)
+	case "TLS_AES_256_GCM_SHA384":
+		*cs = TLSCipherSuite(tls.TLS_AES_256_GCM_SHA384)
+	case "TLS_CHACHA20_POLY1305_SHA256":
+		*cs = TLSCipherSuite(tls.TLS_CHACHA20_POLY1305_SHA256)
 	default:
 		return fmt.Errorf("invalid tls cipher suite: '" + str + "'")
 	}
