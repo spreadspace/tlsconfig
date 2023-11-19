@@ -4,8 +4,20 @@ import (
 	"crypto/tls"
 	"encoding/hex"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 )
+
+func loadFile(filename string) ([]byte, error) {
+	f, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	return io.ReadAll(f)
+}
 
 //********** ProtocolVersion
 
@@ -271,7 +283,9 @@ func (stk *TLSSessionTicketKey) UnmarshalText(data []byte) (err error) {
 
 type TLSConfig struct {
 	CertFile                 string              `json:"certificate" yaml:"certificate" toml:"certificate"`
+	CertData                 string              `json:"certificate-data" yaml:"certificate-data" toml:"certificate-data"`
 	KeyFile                  string              `json:"certificate-key" yaml:"certificate-key" toml:"certificate-key"`
+	KeyData                  string              `json:"certificate-key-data" yaml:"certificate-key-data" toml:"certificate-key-data"`
 	MinVersion               TLSProtocolVersion  `json:"min-protocol-version" yaml:"min-protocol-version" toml:"min-protocol-version"`
 	MaxVersion               TLSProtocolVersion  `json:"max-protocol-version" yaml:"max-protocol-version" toml:"max-protocol-version"`
 	CipherSuites             []TLSCipherSuite    `json:"ciphers" yaml:"ciphers" toml:"ciphers"`
@@ -279,15 +293,35 @@ type TLSConfig struct {
 	CurvePreferences         []TLSCurve          `json:"ecdh-curves" yaml:"ecdh-curves" toml:"ecdh-curves"`
 	SessionTickets           bool                `json:"session-tickets" yaml:"session-tickets" toml:"session-tickets"`
 	SessionTicketKey         TLSSessionTicketKey `json:"session-ticket-key" yaml:"session-ticket-key" toml:"session-ticket-key"`
+	InsecureSkipVerify       bool                `json:"insecure-skip-verify" yaml:"insecure-skip-verify" toml:"insecure-skip-verify"`
+	CACertificatesFile       []string            `json:"ca-certificates" yaml:"ca-certificates" toml:"ca-certificates"`
+	CACertificatesData       string              `json:"ca-certificates-data" yaml:"ca-certificates-data" toml:"ca-certificates-data`
 }
 
 func (t TLSConfig) ToGoTLSConfig() (*tls.Config, error) {
-	cert, err := tls.LoadX509KeyPair(t.CertFile, t.KeyFile)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load certificate and or key: %s", err)
+	if t.CertFile != "" && t.CertData != "" {
+		return nil, fmt.Errorf("certifcate and certificate-data are mutual exclusive")
+	}
+	if t.KeyFile != "" && t.KeyData != "" {
+		return nil, fmt.Errorf("certifcate-key and certificate-key-data are mutual exclusive")
 	}
 
-	cfg := &tls.Config{Certificates: []tls.Certificate{cert}}
+	cfg := &tls.Config{}
+	if t.CertFile != "" && t.KeyFile != "" {
+		cert, err := tls.LoadX509KeyPair(t.CertFile, t.KeyFile)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load certificate and or key: %s", err)
+		}
+		cfg.Certificates = []tls.Certificate{cert}
+	}
+	if t.CertData != "" && t.KeyData != "" {
+		cert, err := tls.X509KeyPair([]byte(t.CertData), []byte(t.KeyData))
+		if err != nil {
+			return nil, fmt.Errorf("failed to load certificate-data and or key-data: %s", err)
+		}
+		cfg.Certificates = []tls.Certificate{cert}
+	}
+
 	cfg.MinVersion = uint16(t.MinVersion)
 	cfg.MaxVersion = uint16(t.MaxVersion)
 	for _, cs := range t.CipherSuites {
@@ -299,6 +333,23 @@ func (t TLSConfig) ToGoTLSConfig() (*tls.Config, error) {
 	}
 	cfg.SessionTicketsDisabled = !t.SessionTickets
 	cfg.SessionTicketKey = [32]byte(t.SessionTicketKey)
+	cfg.InsecureSkipVerify = t.InsecureSkipVerify
+	for _, cert := range t.CACertificatesFile {
+		pemData, err := loadFile(cert)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load ca-certificate: %v", err)
+		}
+
+		ok := cfg.RootCAs.AppendCertsFromPEM(pemData)
+		if !ok {
+			return nil, fmt.Errorf("no ca-certificates found in file '%s'", cert)
+		}
+	}
+	if t.CACertificatesData != "" {
+		if ok := cfg.RootCAs.AppendCertsFromPEM([]byte(t.CACertificatesData)); !ok {
+			return nil, fmt.Errorf("no certificates found in ca-certificates-data")
+		}
+	}
 
 	return cfg, nil
 }
