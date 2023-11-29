@@ -296,6 +296,7 @@ type TLSConfig struct {
 	InsecureSkipVerify       bool                `json:"insecure-skip-verify" yaml:"insecure-skip-verify" toml:"insecure-skip-verify"`
 	CACertificatesFile       []string            `json:"ca-certificates" yaml:"ca-certificates" toml:"ca-certificates"`
 	CACertificatesData       string              `json:"ca-certificates-data" yaml:"ca-certificates-data" toml:"ca-certificates-data`
+	ServerName               string              `json:"server-name" yaml:"server-name" toml:"server-name`
 }
 
 func (t TLSConfig) ToGoTLSConfig() (*tls.Config, error) {
@@ -350,6 +351,7 @@ func (t TLSConfig) ToGoTLSConfig() (*tls.Config, error) {
 			return nil, fmt.Errorf("no certificates found in ca-certificates-data")
 		}
 	}
+	cfg.ServerName = t.ServerName
 
 	return cfg, nil
 }
