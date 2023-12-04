@@ -2,6 +2,7 @@ package tlsconfig
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -336,6 +337,7 @@ func (t TLSConfig) ToGoTLSConfig() (*tls.Config, error) {
 	cfg.SessionTicketKey = [32]byte(t.SessionTicketKey)
 	cfg.InsecureSkipVerify = t.InsecureSkipVerify
 	for _, cert := range t.CACertificatesFile {
+		cfg.RootCAs = x509.NewCertPool()
 		pemData, err := loadFile(cert)
 		if err != nil {
 			return nil, fmt.Errorf("failed to load ca-certificate: %v", err)
@@ -347,6 +349,9 @@ func (t TLSConfig) ToGoTLSConfig() (*tls.Config, error) {
 		}
 	}
 	if t.CACertificatesData != "" {
+		if cfg.RootCAs == nil {
+			cfg.RootCAs = x509.NewCertPool()
+		}
 		if ok := cfg.RootCAs.AppendCertsFromPEM([]byte(t.CACertificatesData)); !ok {
 			return nil, fmt.Errorf("no certificates found in ca-certificates-data")
 		}
