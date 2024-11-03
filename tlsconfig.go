@@ -280,6 +280,53 @@ func (stk *TLSSessionTicketKey) UnmarshalText(data []byte) (err error) {
 	return stk.FromString(string(data))
 }
 
+//********** TLSClientAuthType
+
+type TLSClientAuthType int
+
+func (t TLSClientAuthType) String() string {
+	switch tls.ClientAuthType(t) {
+	case tls.NoClientCert:
+		return "no-client-cert"
+	case tls.RequestClientCert:
+		return "request-client-cert"
+	case tls.RequireAnyClientCert:
+		return "require-any-client-cert"
+	case tls.VerifyClientCertIfGiven:
+		return "verify-client-cert-if-given"
+	case tls.RequireAndVerifyClientCert:
+		return "require-and-verify-client-cert"
+	}
+	return "unknown client-cert policy"
+}
+
+func (t *TLSClientAuthType) FromString(str string) (err error) {
+	switch strings.ToLower(str) {
+	case "no-client-cert":
+		*t = TLSClientAuthType(tls.NoClientCert)
+	case "request-client-cert":
+		*t = TLSClientAuthType(tls.RequestClientCert)
+	case "require-any-client-cert":
+		*t = TLSClientAuthType(tls.RequireAnyClientCert)
+	case "verify-client-cert-if-given":
+		*t = TLSClientAuthType(tls.VerifyClientCertIfGiven)
+	case "require-and-verify-client-cert":
+		*t = TLSClientAuthType(tls.RequireAndVerifyClientCert)
+	default:
+		return fmt.Errorf("invalid client-cert policy: '" + str + "'")
+	}
+	return
+}
+
+func (t TLSClientAuthType) MarshalText() (data []byte, err error) {
+	data = []byte(t.String())
+	return
+}
+
+func (t *TLSClientAuthType) UnmarshalText(data []byte) (err error) {
+	return t.FromString(string(data))
+}
+
 //********** TLSConfig
 
 type TLSConfig struct {
@@ -298,6 +345,7 @@ type TLSConfig struct {
 	CACertificatesFile       []string            `json:"ca-certificates" yaml:"ca-certificates" toml:"ca-certificates"`
 	CACertificatesData       string              `json:"ca-certificates-data" yaml:"ca-certificates-data" toml:"ca-certificates-data`
 	ServerName               string              `json:"server-name" yaml:"server-name" toml:"server-name`
+	ClientAuth               TLSClientAuthType   `json:"client-auth" yaml:"client-auth" toml:"client-auth`
 }
 
 func (t TLSConfig) ToGoTLSConfig() (*tls.Config, error) {
@@ -357,6 +405,8 @@ func (t TLSConfig) ToGoTLSConfig() (*tls.Config, error) {
 		}
 	}
 	cfg.ServerName = t.ServerName
+	cfg.ClientAuth = tls.ClientAuthType(t.ClientAuth)
+	cfg.ClientCAs = cfg.RootCAs
 
 	return cfg, nil
 }
